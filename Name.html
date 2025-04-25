@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sortable Table</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" rel="stylesheet">
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+<body class="p-4">
+    <button id="sortButton" class="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        Sort by First Name
+    </button>
+    <div id="tableContainer" class="mt-4"></div>
+    <script>
+        let data = `"Boyuan","Chai","D10773831"
+"Botao","Chen","D10773951"`;
+        let rows = data.split(/\n/);
+        let numRows = rows.length;
+        let data2d = [];
+        for (let r = 0; r < numRows; r++) {
+            data2d[r] = rows[r].split(/,/);
+        }
+
+        function createTable(data2d) {
+            let tbl = document.createElement('table');
+            let tblhead = tbl.insertRow(0);
+            let cell0 = tblhead.insertCell(0);
+            cell0.innerHTML = "First Name";
+            let cell1 = tblhead.insertCell(1);
+            cell1.innerHTML = "Last Name";
+            let cell2 = tblhead.insertCell(2);
+            cell2.innerHTML = "Student ID";
+
+            for (let r = 0; r < data2d.length; r++) {
+                let row = tbl.insertRow(-1);
+                for (let col = 0; col < 3; col++) {
+                    let cell = row.insertCell(-1);
+                    cell.innerHTML = data2d[r][col].replace(/"/g, '');
+                }
+            }
+            tbl.cellSpacing = '5';
+            tbl.cellPadding = '5';
+            return tbl;
+        }
+
+        function sortTable() {
+            data2d.sort((a, b) => {
+                let nameA = a[0].replace(/"/g, '').toUpperCase();
+                let nameB = b[0].replace(/"/g, '').toUpperCase();
+                if (nameA < nameB) {
+                    return -1;
+                }
+                if (nameA > nameB) {
+                    return 1;
+                }
+                return 0;
+            });
+            let tableContainer = document.getElementById('tableContainer');
+            tableContainer.innerHTML = '';
+            let newTable = createTable(data2d);
+            tableContainer.appendChild(newTable);
+        }
+
+        let table = createTable(data2d);
+        let tableContainer = document.getElementById('tableContainer');
+        tableContainer.appendChild(table);
+
+        let sortButton = document.getElementById('sortButton');
+        sortButton.addEventListener('click', sortTable);
+
+    </script>
+</body>
+</html>
