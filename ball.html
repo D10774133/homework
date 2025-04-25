@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Flying Balloon Lab</title>
+  <style>
+    #balloon-container {
+      width: 400px;
+      height: 400px;
+      border: 1px solid black;
+      margin: 0 auto;
+      position: relative;
+    }
+
+    .balloon {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="balloon-container"></div>
+  <script>
+
+    const colors = ['red', 'orange', 'yellow', 'green', 'black', 'blue', 'purple'];
+
+    function createBalloon() {
+      const balloon = document.createElement('div');
+      balloon.classList.add('balloon');
+
+      const randomColorIndex = Math.floor(Math.random() * colors.length);
+      const randomColor = colors[randomColorIndex];
+      balloon.style.backgroundColor = randomColor;
+      return balloon;
+    }
+
+    function moveBalloon(balloon) {
+      let y = 0;
+      let diameter = 50; 
+      const speed = 1;
+      const burstHeight = 100; 
+      const intervalId = setInterval(() => {
+        y += speed;
+        diameter += 1; 
+        balloon.style.bottom = y + 'px';
+        balloon.style.width = diameter + 'px';
+        balloon.style.height = diameter + 'px';
+        if (y >= burstHeight) {
+          clearInterval(intervalId);
+          balloon.remove(); 
+        }
+      }, 50);
+    }
+
+    function init() {
+      const container = document.getElementById('balloon-container');
+      const balloon = createBalloon();
+      container.appendChild(balloon);
+      moveBalloon(balloon);
+    }
+
+    window.onload = init;
+  </script>
+</body>
+
+</html>
