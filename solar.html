@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solar System Simulation</title>
+    <style>
+        #solar-system {
+            width: 1500px;
+            height: 800px;
+            position: relative;
+            margin: 0 auto;
+        }
+
+       .star {
+            border-radius: 50%;
+        }
+
+       .planet {
+            border-radius: 50%;
+            position: absolute;
+        }
+
+       .orbit {
+            border: 1px solid #ccc;
+            border-radius: 50%;
+            position: absolute;
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 80%;
+            margin: 20px auto;
+        }
+
+        table th,
+        table td {
+            border: 1px solid #ccc;
+            padding: 8px;
+            text-align: left;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="solar-system"></div>
+    <script>
+        class BallShape {
+            constructor(name, color, diameter, mass) {
+                this.name = name;
+                this.color = color;
+                this.diameter = diameter;
+                this.mass = mass;
+                this.element = null;
+            }
+
+            createElement() {
+                const elem = document.createElement('div');
+                elem.className = this instanceof Star? 'star' : 'planet';
+                elem.style.width = `${this.diameter}px`;
+                elem.style.height = `${this.diameter}px`;
+                elem.style.backgroundColor = this.color;
+                elem.title = `${this.name}\nDiameter: ${this.diameter}px\nMass: ${this.mass}`;
+                return elem;
+            }
+
+            render(container) {
+                this.element = this.createElement();
+                container.appendChild(this.element);
+                return this;
+            }
+
+            getAttributes() {
+                return {
+                    name: this.name,
+                    color: this.color,
+                    diameter: this.diameter,
+                    mass: this.mass,
+                    type: this.type
+                };
+            }
+        }
+
+        class Star extends BallShape {
+            constructor(name, color, diameter, mass) {
+                super(name, color, diameter, mass);
+                this.type ='star';
+            }
+
+            createElement() {
+                const elem = super.createElement();
+                elem.style.boxShadow = `0 0 ${this.diameter}px ${this.color}`;
+                return elem;
+            }
+
+            positionAtCenter(container) {
+                if (this.element) {
+                    this.element.style.left = '50%';
+                    this.element.style.top = '50%';
+                }
+                return this;
+            }
+        }
+
+        class Planet extends BallShape {
+            constructor(name, color, diameter, mass, orbitRadius, orbitSpeed, rotationSpeed) {
+                super(name, color, diameter, mass);
+                this.orbitRadius = orbitRadius;
+                this.orbitSpeed = orbitSpeed;
+                this.rotationSpeed = rotationSpeed;
+                this.angle = Math.random() * 360;
+                this.orbitElement = null;
+                this.type = 'planet';
+            }
+
+            createOrbit(container) {
+                const orbit = document.createElement('div');
+                orbit.className = 'orbit';
+                orbit.style.width = `${this.orbitRadius * 2}px`;
+                orbit.style.height = `${this.orbitRadius * 2}px`;
+                orbit.style.left = '50%';
+                orbit.style.top = '50%';
+                orbit.style.transform = 'translate(-50%, -50%)';
+                container.appendChild(orbit);
+                this.orbitElement = orbit;
+                return this;
+            }
+
+            move() {
+                if (this.orbitElement) {
+                    const x = this.orbitRadius * Math.cos(this.angle * (Math.PI / 180));
+                    const y = this.orbitRadius * Math.sin(this.angle * (Math.PI / 180));
+                    this.element.style.left = `calc(50% + ${x}px - ${this.diameter / 2}px)`;
+                    this.element.style.top = `calc(50% + ${y}px - ${this.diameter / 2}px)`;
+                    this.angle += this.orbitSpeed;
+                }
+                return this;
+            }
+
+            getAttributes() {
+                const attrs = super.getAttributes();
+                attrs.orbitRadius = this.orbitRadius;
+                return attrs;
+            }
+        }
+
+        class Mercury extends Planet {
+            constructor() {
+                super('Mercury', '#d3d3d3', 10, 0.055, 100, 0.5, 0.1);
+            }
+        }
+
+        class Venus extends Planet {
+            constructor() {
+                super('Venus', '#ffcc99', 12, 0.815, 150, 0.3, 0.05);
+            }
+        }
+
+        class Earth extends Planet {
+            constructor() {
+                super('Earth', '#00bfff', 14, 1, 200, 0.2, 0.02);
+            }
+        }
+
+        class Mars extends Planet {
+            constructor() {
+                super('Mars', '#ff6347', 11, 0.107, 250, 0.15, 0.03);
+            }
+        }
+
+        class Jupiter extends Planet {
+            constructor() {
+                super('Jupiter', '#ffd700', 30, 317.8, 350, 0.08, 0.01);
+            }
+        }
+
+        class Saturn extends Planet {
+            constructor() {
+                super('Saturn', '#f0e68c', 25, 95.2, 450, 0.06, 0.008);
+            }
+        }
+
+        class Uranus extends Planet {
+            constructor() {
+                super('Uranus', '#add8e6', 20, 14.6, 550, 0.04, 0.006);
+            }
+        }
+
+        class Neptune extends Planet {
+            constructor() {
+                super('Neptune', '#00008b', 20, 17.2, 650, 0.03, 0.005);
+            }
+        }
+
+        class SolarSystem {
+            constructor(containerId) {
+                this.container = document.getElementById(containerId);
+                this.bodies = [];
+            }
+
+            addBody(body) {
+                body.render(this.container);
+                if (body instanceof Star) {
+                    body.positionAtCenter(this.container);
+                } else if (body instanceof Planet) {
+                    body.createOrbit(this.container);
+                }
+                this.bodies.push(body);
+                return this;
+            }
+
+            startSimulation() {
+                const animate = () => {
+                    this.bodies.forEach(body => {
+                        if (body instanceof Planet) {
+                            body.move();
+                        }
+                    });
+                    requestAnimationFrame(animate);
+                };
+                animate();
+            }
+
+            createAttributeTable() {
+                const table = document.createElement('table');
+                const headerRow = document.createElement('tr');
+                const headers = ['Name', 'Mass', 'Orbit Radius', 'Color', 'Diameter', 'Type'];
+                headers.forEach(headerText => {
+                    const th = document.createElement('th');
+                    th.textContent = headerText;
+                    th.addEventListener('click', (e) => this.sortTable(e.target.cellIndex));
+                    headerRow.appendChild(th);
+                });
+                table.appendChild(headerRow);
+                this.bodies.forEach(body => {
+                    const row = document.createElement('tr');
+                    const { name, mass, orbitRadius, color, diameter, type } = body.getAttributes();
+                    const cells = [name, mass, orbitRadius || '', color, diameter, type];
+                    cells.forEach(cellText => {
+                        const td = document.createElement('td');
+                        td.textContent = cellText;
+                        row.appendChild(td);
+                    });
+                    table.appendChild(row);
+                });
+                const existingTable = document.querySelector('table');
+                if (existingTable) {
+                    existingTable.remove();
+                }
+                document.body.appendChild(table);
+            }
+
+            sortTable(columnIndex) {
+                const table = document.querySelector('table');
+                const rows = Array.from(table.querySelectorAll('tr')).slice(1);
+                rows.sort((a, b) => {
+                    const aCell = a.querySelectorAll('td')[columnIndex];
+                    const bCell = b.querySelectorAll('td')[columnIndex];
+                    const aValue = aCell.textContent;
+                    const bValue = bCell.textContent;
+                    if (columnIndex === 1 || columnIndex === 2 || columnIndex === 4) {
+                        return parseFloat(aValue) - parseFloat(bValue);
+                    }
+                    return aValue.localeCompare(bValue);
+                });
+                const headerRow = table.querySelector('tr');
+                table.innerHTML = '';
+                table.appendChild(headerRow);
+                rows.forEach(row => table.appendChild(row));
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const solarSystem = new SolarSystem('solar-system');
+            solarSystem.addBody(new Star('Sun', '#f39c12', 50, 333000));
+            solarSystem.addBody(new Mercury());
+            solarSystem.addBody(new Venus());
+            solarSystem.addBody(new Earth());
+            solarSystem.addBody(new Mars());
+            solarSystem.addBody(new Jupiter());
+            solarSystem.addBody(new Saturn());
+            solarSystem.addBody(new Uranus());
+            solarSystem.addBody(new Neptune());
+            solarSystem.startSimulation();
+            document.addEventListener('click', () => {
+                solarSystem.createAttributeTable();
+            });
+        });
+    </script>
+</body>
+
+</html>       
